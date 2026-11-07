@@ -1,0 +1,8 @@
+*
+!deploy/
+deploy/*
+!deploy/Dockerfile
+!deploy/tinyproxy.conf
+!deploy/script/
+deploy/script/*
+!deploy/script/container-start.sh

@@ -1,0 +1,67 @@
+name: vpn-proxy
+
+services:
+  vpn:
+    image: qmcgaw/gluetun:v3.41.3
+    cap_add:
+      - NET_ADMIN
+    environment:
+      VPN_SERVICE_PROVIDER: custom
+      VPN_TYPE: wireguard
+      WIREGUARD_IMPLEMENTATION: kernelspace
+      FIREWALL_INPUT_PORTS: "8888"
+    volumes:
+      - type: bind
+        source: ./.data/wireguard/wg0.conf
+        target: /gluetun/wireguard/wg0.conf
+        read_only: true
+        bind:
+          create_host_path: false
+          selinux: Z
+    ports:
+      - "127.0.0.1:${PROXY_PORT:?Set PROXY_PORT in root .env}:8888"
+    sysctls:
+      net.ipv6.conf.all.disable_ipv6: "1"
+      net.ipv6.conf.default.disable_ipv6: "1"
+    restart: unless-stopped
+
+  proxy:
+    image: vpn-proxy-tinyproxy:local
+    build:
+      context: .
+      dockerfile: deploy/Dockerfile
+    network_mode: service:vpn
+    depends_on:
+      vpn:
+        condition: service_healthy
+        restart: true
+    cap_drop:
+      - ALL
+    cap_add:
+      - SETUID
+      - SETGID
+    security_opt:
+      - no-new-privileges:true
+    healthcheck:
+      test:
+        - CMD
+        - curl
+        - --proxy
+        - http://127.0.0.1:8888
+        - --noproxy
+        - ""
+        - --fail
+        - --silent
+        - --show-error
+        - --connect-timeout
+        - "5"
+        - --max-time
+        - "10"
+        - --output
+        - /dev/null
+        - https://www.cloudflare.com/cdn-cgi/trace
+      interval: 30s
+      timeout: 15s
+      start_period: 20s
+      retries: 3
+    restart: unless-stopped

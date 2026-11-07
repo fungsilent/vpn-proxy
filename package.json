@@ -1,0 +1,11 @@
+{
+  "name": "vpn-proxy",
+  "private": true,
+  "scripts": {
+    "deploy:start": "bash deploy/script/start.sh",
+    "deploy:stop": "bash deploy/script/stop.sh",
+    "deploy:down": "bash deploy/script/down.sh",
+    "apps:codex": "bash apps/codex/setup.sh",
+    "vpn:use": "bash deploy/script/switch.sh"
+  }
+}

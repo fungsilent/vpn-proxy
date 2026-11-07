@@ -1,0 +1,12 @@
+.env
+.env.*
+!.env.example
+.data/
+node_modules/
+*.log
+*.key
+*.pem
+proton-*.conf
+wg0.conf
+__pycache__/
+*.pyc
